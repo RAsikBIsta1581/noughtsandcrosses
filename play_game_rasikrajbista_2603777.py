@@ -1,4 +1,4 @@
-from noughtsandcrosses import *
+from noughtsandcrosses_rasikrajbista_2603777 import *
 
     
 def main():
