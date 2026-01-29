@@ -45,35 +45,44 @@ def get_player_move(board):
 
 
 def choose_computer_move(board):
-    """Chooses a move for the computer and returns row and column."""
-    # Try to win
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == ' ':
-                board[row][col] = 'O'
+    # Winning move
+    for r in range(3):
+        for c in range(3):
+            if board[r][c] == ' ':
+                board[r][c] = 'O'
                 if check_for_win(board, 'O'):
-                    board[row][col] = ' '
-                    return row, col
-                board[row][col] = ' '
+                    board[r][c] = ' '
+                    return r, c
+                board[r][c] = ' '
 
-    # Try to block player
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == ' ':
-                board[row][col] = 'X'
+    # Blocking move
+    for r in range(3):
+        for c in range(3):
+            if board[r][c] == ' ':
+                board[r][c] = 'X'
                 if check_for_win(board, 'X'):
-                    board[row][col] = ' '
-                    return row, col
-                board[row][col] = ' '
+                    board[r][c] = ' '
+                    return r, c
+                board[r][c] = ' '
 
-    # Choose random available cell
-    free_cells = []
-    for row in range(3):
-        for col in range(3):
-            if board[row][col] == ' ':
-                free_cells.append((row, col))
+    # Take center
+    if board[1][1] == ' ':
+        return 1, 1
 
-    return random.choice(free_cells)
+    # Take a corner
+    corners = [(0,0),(0,2),(2,0),(2,2)]
+    random.shuffle(corners)
+    for r, c in corners:
+        if board[r][c] == ' ':
+            return r, c
+
+    # Take any side
+    sides = [(0,1),(1,0),(1,2),(2,1)]
+    random.shuffle(sides)
+    for r, c in sides:
+        if board[r][c] == ' ':
+            return r, c
+
 
 
 def check_for_win(board, mark):
@@ -148,12 +157,15 @@ def menu():
 
 
 def load_scores():
-    """Loads scores from leaderboard.txt and returns them as a dictionary."""
     if not os.path.exists("leaderboard.txt"):
         return {}
 
-    with open("leaderboard.txt", "r", encoding="utf-8") as file:
-        return json.load(file)
+    try:
+        with open("leaderboard.txt", "r", encoding="utf-8") as file:
+            return json.load(file)
+    except json.JSONDecodeError:
+        return {}
+
 
 
 def save_score(score):
@@ -165,14 +177,16 @@ def save_score(score):
         with open("leaderboard.txt", "r", encoding="utf-8") as file:
             scores = json.load(file)
 
-    scores[name] = score
+    scores[name] = scores.get(name, 0) + score
+
 
     with open("leaderboard.txt", "w", encoding="utf-8") as file:
         json.dump(scores, file)
 
 
 def display_leaderboard(leaders):
-    """Displays the leaderboard."""
     print("\nLeaderboard:")
-    for name, score in leaders.items():
+    sorted_scores = sorted(leaders.items(), key=lambda x: x[1], reverse=True)
+    for name, score in sorted_scores:
         print(name, ":", score)
+
